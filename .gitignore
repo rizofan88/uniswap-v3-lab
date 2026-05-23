@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+lib/
+
+# Environment
+.env
+
+# Hardhat generated files
+artifacts/
+cache/
+typechain-types/
+
+# Foundry generated files
+out/
+broadcast/
+
+# Local script/cache files
+scripts/cache_hardhat/
+cache_hardhat/
+
+# Logs
+*.log
+ 
+*.swp
+*.un~

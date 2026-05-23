@@ -1,0 +1,182 @@
+# Uniswap V3 Lab
+
+A mainnet-fork Ethereum project for experimenting with Uniswap V3 integrations using Solidity, Foundry, Hardhat, and TypeScript.
+
+Current examples include a WETH → DAI exact-input swap. Planned/possible examples include quoting, pool inspection, flash swaps, and arbitrage simulations.
+
+## What this demonstrates
+
+- Solidity contract integration with Uniswap V3 `SwapRouter`
+- Mainnet-fork testing with Foundry and Anvil
+- TypeScript scripts using ethers v6
+- WETH wrapping, ERC20 approval, and swap execution
+- Clean separation of addresses, ABIs, token metadata, and contract helpers
+
+## Tech stack
+
+- Solidity
+- Foundry / Forge / Anvil
+- Hardhat
+- TypeScript
+- ethers v6
+- Uniswap V3 periphery
+
+## Project structure
+
+```text
+contracts/WethToDaiSwap.sol   Solidity contract that performs the WETH → DAI swap
+test/WethToDaiSwap.t.sol      Foundry fork tests
+scripts/swap.ts               TypeScript script that deploys and calls the WethToDaiSwap contract
+scripts/utils/                ABI, address, token, and provider helpers
+foundry.toml                  Foundry configuration
+hardhat.config.ts             Hardhat configuration for TypeScript scripts
+```
+
+## Setup
+
+Install node dependencies:
+
+```bash
+npm install
+```
+
+Install Foundry if you don't already have it:
+
+```bash
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+```
+
+Add forge test utilities.
+
+In project root run:
+
+```bash
+mkdir -p lib/
+git clone https://github.com/foundry-rs/forge-std lib/forge-std
+```
+
+Create a `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+Add a valid Ethereum mainnet RPC URL:
+
+```env
+MAINNET_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+```
+
+Then load it in the environment:
+```bash
+source .env
+```
+
+## Run local mainnet fork
+
+From the project root start Anvil:
+
+```bash
+anvil --fork-url "$MAINNET_RPC_URL" \
+  --fork-block-number 18657372 \
+  --fork-chain-id 1 \
+  --chain-id 1
+```
+
+This starts a local fork at:
+
+```text
+http://127.0.0.1:8545
+```
+Keep this terminal running while executing the tests or TypeScript script from another terminal.
+
+## Run Forge tests
+
+In a second terminal:
+
+```bash
+forge test --fork-url http://127.0.0.1:8545 -vvv
+```
+
+## Run TypeScript swap script
+
+```bash
+npx hardhat run scripts/swap.ts --network localhost
+```
+
+## Use builtin scripts
+
+Run Forge test:
+
+```bash
+npm run test:forge
+```
+
+Run TypeScript swap script:
+
+```bash
+npm run swap:local
+```
+
+## Example output
+
+```bash
+forge test --fork-url http://127.0.0.1:8545 -vvv
+```
+
+```text
+[⠊] Compiling...
+[⠒] Compiling 26 files with Solc 0.8.30
+[⠑] Solc 0.8.30 finished in 2.58s
+Compiler run successful!
+
+Ran 7 tests for test/WethToDaiSwap.t.sol:WethToDaiSwapTest
+[PASS] testDeploys() (gas: 2484)
+[PASS] testSwapConsumesExactWethAmount() (gas: 169808)
+[PASS] testSwapOutputsDai() (gas: 169748)
+[PASS] testSwapRevertsWithoutApproval() (gas: 50744)
+[PASS] testUserCanApproveSwapContract() (gas: 68695)
+[PASS] testUserCanSwapWETHForDAI() (gas: 172148)
+[PASS] testUserCanWrapEthIntoWeth() (gas: 42221)
+Suite result: ok. 7 passed; 0 failed; 0 skipped; finished in 15.56ms (8.04ms CPU time)
+
+Ran 1 test suite in 701.03ms (15.56ms CPU time): 7 tests passed, 0 failed, 0 skipped (7 total tests)
+```
+
+
+```bash
+npx hardhat run scripts/swap.ts --network localhost
+```
+
+```text
+--- Wrapping ETH into WETH ---
+
+--- Balances before swap ---
+WETH: 0.1
+DAI: 204.001788267463093592
+
+--- Deploying WethToDaiSwap contract ---
+
+--- WethToDaiSwap deployed at address ---
+0xa68E430060f74F9821D2dC9A9E2CE3aF7d842EBe
+
+--- Approving WethToDaiSwap contract ---
+Allowance: 0.1 WETH
+
+--- Executing swap ---
+
+--- Balances after swap ---
+DAI: 408.002728227362767699
+WETH: 0.0
+
+--- Swap result ---
+DAI received: 204.000939959899674107
+WETH spent: 0.1
+```
+
+## Notes
+
+This project is for local fork/demo purposes only. It does not implement production slippage protection.
+
+For real mainnet swaps, you would first query a quote provider for the expected output amount, apply a slippage tolerance, and pass the result as `amountOutMinimum` in the `SwapRouter` params.
