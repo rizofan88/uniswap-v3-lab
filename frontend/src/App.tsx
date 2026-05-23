@@ -1,121 +1,121 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import uniswapLogo from './assets/uniswap_logo.png'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+    <main className="page">
+      <section className="hero-section">
+        <div className="hero-copy">
+          <p className="eyebrow">Ethereum Mainnet Fork Demo</p>
+
+          <img
+            src={uniswapLogo}
+            className="uniswap-logo"
+            alt="Uniswap logo"
+          />
+
+          <h1>Uniswap V3 Lab</h1>
+
+          <p className="hero-text">
+            A Solidity and TypeScript project demonstrating a WETH to DAI swap
+            through the Uniswap V3 SwapRouter using a local Ethereum mainnet fork.
           </p>
+
+          <div className="hero-actions">
+            <a
+              className="button primary"
+              href="https://github.com/rizofan88/uniswap-v3-lab"
+              target="_blank"
+              rel="noreferrer"
+            >
+              View GitHub
+            </a>
+          </div>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+
+        <section className="swap-card" id="demo">
+          <div className="card-header">
+            <h2>Swap Preview</h2>
+            <span className="status">Demo</span>
+          </div>
+
+          <div className="token-box">
+            <label>You pay</label>
+            <div className="token-row">
+              <input value="0.1" readOnly />
+              <span className="token">WETH</span>
+            </div>
+          </div>
+
+          <div className="arrow">↓</div>
+
+          <div className="token-box">
+            <label>You receive</label>
+            <div className="token-row">
+              <input value="204.00178826" readOnly />
+              <span className="token">DAI</span>
+            </div>
+          </div>
+
+          <div className="details">
+            <div>
+              <span>Route</span>
+              <strong>WETH → DAI</strong>
+            </div>
+
+            <div>
+              <span>Fee tier</span>
+              <strong>0.3%</strong>
+            </div>
+
+            <div>
+              <span>Router</span>
+              <strong>Uniswap V3 SwapRouter</strong>
+            </div>
+
+            <div>
+              <span>Network</span>
+              <strong>Mainnet fork</strong>
+            </div>
+          </div>
+
+          <button className="swap-button" disabled>
+            Run locally with script
+          </button>
+        </section>
       </section>
 
-      <div className="ticks"></div>
+      <section className="info-section">
+        <article className="info-card">
+          <h3>What it demonstrates</h3>
+          <p>
+            The project wraps ETH into WETH, approves the Uniswap V3 router,
+            executes a WETH to DAI swap, and checks token balances on a forked
+            Ethereum mainnet environment.
+          </p>
+        </article>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
+        <article className="info-card">
+          <h3>Tech stack</h3>
           <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
+            <li>Solidity smart contract</li>
+            <li>Foundry and Anvil</li>
+            <li>Hardhat</li>
+            <li>TypeScript scripts</li>
+            <li>ethers v6</li>
+            <li>Uniswap V3 periphery</li>
           </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+        </article>
+
+        <article className="info-card">
+          <h3>Local execution</h3>
+          <pre>
+            <code>{`npm install
+npx hardhat run scripts/swap.ts`}</code>
+          </pre>
+        </article>
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </main>
   )
 }
 

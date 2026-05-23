@@ -175,6 +175,31 @@ DAI received: 204.000939959899674107
 WETH spent: 0.1
 ```
 
+## Frontend 
+
+This repository includes a small React/Vite frontend in `frontend/`.
+
+The frontend is a static project page for the Uniswap V3 swap demo. It presents the WETH → DAI swap flow, the local mainnet-fork execution model, and the project tech stack.
+
+It does not execute swaps directly in the browser. The actual swap logic is run locally through the Hardhat/TypeScript scripts.
+
+### Run the frontend locally
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Build the frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+The build artifact is generated in `frontend/dist`.
+
 ## Notes
 
 This project is for local fork/demo purposes only. It does not implement production slippage protection.

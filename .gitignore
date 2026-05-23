@@ -20,6 +20,9 @@ cache_hardhat/
 
 # Logs
 *.log
+
+# Frontend build
+frontend/dist/
  
 *.swp
 *.un~
