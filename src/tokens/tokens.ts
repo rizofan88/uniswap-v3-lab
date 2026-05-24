@@ -1,5 +1,5 @@
 import { Token } from "@uniswap/sdk-core";
-import { ADDRESSES } from "./addresses";
+import { ADDRESSES } from "../ethereum";
 
 export const CHAIN_ID = 1;
 
@@ -42,3 +42,11 @@ export const AAVE_TOKEN = new Token(
   "AAVE",
   "Aave Token"
 );
+
+export const TOKEN_LIST: Token[] = [
+  WETH_TOKEN,
+  DAI_TOKEN,
+  USDC_TOKEN,
+  UNI_TOKEN,
+  AAVE_TOKEN
+]

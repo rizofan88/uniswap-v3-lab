@@ -2,34 +2,69 @@
 
 A mainnet-fork Ethereum project for experimenting with Uniswap V3 integrations using Solidity, Foundry, Hardhat, and TypeScript.
 
-Current examples include a WETH → DAI exact-input swap. Planned/possible examples include quoting, pool inspection, flash swaps, and arbitrage simulations.
+Current examples include:
+
+- A WETH → DAI exact-input swap through a deployed Solidity helper contract.
+- A TypeScript quote client that calls the Uniswap Quote API to estimate exact-input swap output and gas fees.
+- Token metadata helpers for resolving symbols such as `WETH`, `DAI`, and `AAVE` into Uniswap SDK `Token` objects.
 
 ## What this demonstrates
 
 - Solidity contract integration with Uniswap V3 `SwapRouter`
 - Mainnet-fork testing with Foundry and Anvil
 - TypeScript scripts using ethers v6
+- Uniswap quote API integration for exact-input swap estimates
 - WETH wrapping, ERC20 approval, and swap execution
 - Clean separation of addresses, ABIs, token metadata, and contract helpers
 
 ## Tech stack
 
+**Smart contracts and local fork**
+
 - Solidity
 - Foundry / Forge / Anvil
 - Hardhat
+- Uniswap V3 periphery
+
+**TypeScript tooling**
+
 - TypeScript
 - ethers v6
-- Uniswap V3 periphery
+- Uniswap Quote API
+
+**Frontend / project page**
+
+- React
+- Vite
+- GitHub Pages
 
 ## Project structure
 
 ```text
-contracts/WethToDaiSwap.sol   Solidity contract that performs the WETH → DAI swap
-test/WethToDaiSwap.t.sol      Foundry fork tests
-scripts/swap.ts               TypeScript script that deploys and calls the WethToDaiSwap contract
-scripts/utils/                ABI, address, token, and provider helpers
-foundry.toml                  Foundry configuration
-hardhat.config.ts             Hardhat configuration for TypeScript scripts
+src/
+  config/       Environment variable loading and validation
+  contracts/    Contract ABIs and contract-related exports
+  ethereum/     Ethereum addresses, provider, and signer helpers
+  quote/        Uniswap quote API client, quote types, and CLI output formatting
+  swap/         WETH → DAI swap demo logic
+  tokens/       Token metadata, token contract helpers, and symbol resolution
+  utils/        Generic formatting and printing helpers
+
+contracts/
+  WethToDaiSwap.sol      Solidity contract that performs the WETH → DAI swap
+
+test/
+  WethToDaiSwap.t.sol    Foundry mainnet-fork tests
+
+scripts/
+  swap.ts                TypeScript script that deploys and calls the WethToDaiSwap contract
+  quote.ts               TypeScript script that executes the quote query with provided arguments
+
+frontend/
+  React / Vite project page deployed with GitHub Pages
+
+foundry.toml             Foundry configuration
+hardhat.config.ts        Hardhat configuration for TypeScript scripts
 ```
 
 ## Setup
@@ -62,67 +97,99 @@ Create a `.env` file:
 cp .env.example .env
 ```
 
-Add a valid Ethereum mainnet RPC URL:
+Add a valid Ethereum mainnet RPC URL and Uniswap API key:
 
 ```env
 MAINNET_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+UNISWAP_API_KEY="YOUR_API_KEY"
 ```
 
-Then load it in the environment:
+Then load them in the environment:
+
 ```bash
 source .env
 ```
 
 ## Run local mainnet fork
 
-From the project root start Anvil:
+Foundry RPC aliases are configured in `foundry.toml`:
+
+```toml
+[rpc_endpoints]
+mainnet = "${MAINNET_RPC_URL}"
+localhost = "http://127.0.0.1:8545"
+```
+
+The npm scripts use the `mainnet` alias, so `.env` must define the same variable name used in `foundry.toml`.
+
+If you rename MAINNET_RPC_URL, update foundry.toml also.
+
+Start a local fork:
 
 ```bash
-anvil --fork-url "$MAINNET_RPC_URL" \
-  --fork-block-number 18657372 \
+npm run fork
+```
+
+This runs:
+
+```bash
+anvil --fork-url mainnet \
+  --fork-block-number -10 \
   --fork-chain-id 1 \
   --chain-id 1
 ```
 
-This starts a local fork at:
+And starts a local fork at:
 
 ```text
 http://127.0.0.1:8545
 ```
-Keep this terminal running while executing the tests or TypeScript script from another terminal.
+
+Keep this terminal running while executing the tests or TypeScript scripts from another terminal.
 
 ## Run Forge tests
 
 In a second terminal:
 
 ```bash
-forge test --fork-url http://127.0.0.1:8545 -vvv
+npm run test:forge
+```
+
+This runs the command: 
+
+```bash
+forge test --fork-url localhost -vvv
 ```
 
 ## Run TypeScript swap script
 
 ```bash
+npm run swap:local
+```
+
+This runs the command:
+
+```bash
 npx hardhat run scripts/swap.ts --network localhost
 ```
 
-## Use builtin scripts
-
-Run Forge test:
+## Query Uniswap quote API
 
 ```bash
-npm run test:forge
+npm run quote -- <tokenIn> <tokenOut> <amount>
+```
+The quote command resolves token symbols from the local token list in:
+
+```text
+src/tokens/tokens.ts
 ```
 
-Run TypeScript swap script:
-
-```bash
-npm run swap:local
-```
+Only tokens defined in that file are supported by the CLI. To add another token, add a new `Token` definition to `src/tokens/tokens.ts` and include it in `TOKEN_LIST`.
 
 ## Example output
 
 ```bash
-forge test --fork-url http://127.0.0.1:8545 -vvv
+forge test --fork-url localhost -vvv
 ```
 
 ```text
@@ -175,6 +242,18 @@ DAI received: 204.000939959899674107
 WETH spent: 0.1
 ```
 
+```bash
+npx tsx scripts/quote.ts WETH DAI 0.1
+```
+
+```text
+--- Quote ---
+Input:      0.1  WETH
+Output:  210.09  DAI
+Fees:     $0.01  
+-------------
+```
+
 ## Frontend 
 
 This repository includes a small React/Vite frontend in `frontend/`.
@@ -195,7 +274,7 @@ npm run dev
 
 ```bash
 cd frontend
-npm run dev
+npm run build
 ```
 
 The build artifact is generated in `frontend/dist`.
@@ -204,4 +283,4 @@ The build artifact is generated in `frontend/dist`.
 
 This project is for local fork/demo purposes only. It does not implement production slippage protection.
 
-For real mainnet swaps, you would first query a quote provider for the expected output amount, apply a slippage tolerance, and pass the result as `amountOutMinimum` in the `SwapRouter` params.
+For real mainnet swaps, you would first query the quote provider for the expected output amount, apply a slippage tolerance, and pass the result as `amountOutMinimum` in the `SwapRouter` params.

@@ -1,13 +1,17 @@
 {
-  "name": "uniswap-v3-swap",
+  "name": "uniswap-v3-lab",
   "scripts": {
+    "fork": "anvil --fork-url mainnet --fork-block-number -10 --fork-chain-id 1 --chain-id 1",
     "swap:local": "hardhat run scripts/swap.ts --network localhost",
-    "test:forge": "forge test --fork-url http://127.0.0.1:8545 -vvv"
+    "quote": "tsx scripts/quote.ts",
+    "test:forge": "forge test --fork-url localhost -vvv"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-foundry": "^1.1.3",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.22.18"
+    "hardhat": "^2.22.18",
+    "tsx": "^4.22.3",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.2.0",

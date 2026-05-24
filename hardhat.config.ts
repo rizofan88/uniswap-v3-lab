@@ -1,7 +1,7 @@
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
-import "dotenv/config";
+import {env} from './src/config/env'
 
 task("show-paths", "Prints Hardhat's resolved paths", async (_args, hre) => {
   console.log("Hardhat paths:");
@@ -22,7 +22,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: process.env.MAINNET_RPC_URL ?? "",
+        url: env.MAINNET_RPC_URL ?? "",
       },
     },
   },

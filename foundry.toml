@@ -8,3 +8,7 @@ remappings = [
     "@openzeppelin/=node_modules/@openzeppelin/",
     "@uniswap/=node_modules/@uniswap/",
 ]
+
+[rpc_endpoints]
+mainnet =  "${MAINNET_RPC_URL}"
+localhost = 'http://127.0.0.1:8545'

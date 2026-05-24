@@ -10,6 +10,4 @@ export async function getSigner() {
   return signer;
 }
 
-export function getProvider() {
-  return ethers.provider;
-}
+export const DEFAULT_SIGNER_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
