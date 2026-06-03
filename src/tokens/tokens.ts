@@ -3,6 +3,14 @@ import { ADDRESSES } from "../ethereum";
 
 export const CHAIN_ID = 1;
 
+export const ETH = new Token(
+  CHAIN_ID,
+  ADDRESSES.MAINNET.ETH,
+  18,
+  "ETH",
+  "Ether"
+);
+
 export const WETH_TOKEN = new Token(
   CHAIN_ID,
   ADDRESSES.MAINNET.WETH,
@@ -44,6 +52,7 @@ export const AAVE_TOKEN = new Token(
 );
 
 export const TOKEN_LIST: Token[] = [
+  ETH,
   WETH_TOKEN,
   DAI_TOKEN,
   USDC_TOKEN,

@@ -26,3 +26,5 @@ frontend/dist/
  
 *.swp
 *.un~
+
+copy*

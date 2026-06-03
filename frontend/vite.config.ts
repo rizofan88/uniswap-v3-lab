@@ -3,5 +3,10 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/uniswap-v3-lab/",
+    server: {
+    proxy: {
+      "/api": "http://localhost:3001",
+    },
+  },
+  //base: "/uniswap-v3-lab/",
 });

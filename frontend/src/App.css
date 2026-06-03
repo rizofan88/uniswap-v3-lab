@@ -28,6 +28,11 @@ input {
   font: inherit;
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .page {
   width: min(1120px, 92%);
   margin: 0 auto;
@@ -73,7 +78,6 @@ h1 {
   margin: 0 0 24px;
   font-weight: 800;
   text-align: center;
-
   background: linear-gradient(135deg, #ffffff, #ff4fb8);
   -webkit-background-clip: text;
   background-clip: text;
@@ -159,6 +163,18 @@ h1 {
   margin-bottom: 12px;
 }
 
+.token-box-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.token-box-header span {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
 .token-row {
   display: flex;
   align-items: center;
@@ -180,6 +196,15 @@ h1 {
   border-radius: 999px;
   padding: 9px 13px;
   font-weight: 800;
+}
+
+.token-select {
+  border: none;
+  border-radius: 999px;
+  padding: 0.7rem 0.9rem;
+  font-weight: 800;
+  background: #f2f2f7;
+  color: #111;
 }
 
 .arrow {
@@ -216,17 +241,32 @@ h1 {
   text-align: right;
 }
 
+.swap-actions {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.quote-button,
 .swap-button {
   width: 100%;
-  min-height: 48px;
-  border: 0;
+  border: none;
   border-radius: 18px;
+  padding: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.quote-button {
+  margin-top: 1rem;
+  background: #f2f2f7;
+  color: #111;
+}
+
+.swap-button {
+  margin-top: 0.75rem;
   background: linear-gradient(135deg, #ff007a, #7a5cff);
   color: white;
-  font-weight: 800;
-  font-size: 1rem;
-  cursor: not-allowed;
-  opacity: 0.78;
 }
 
 .info-section {
@@ -271,6 +311,323 @@ code {
   color: #d7def0;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 0.88rem;
+}
+
+.app-layout {
+  align-items: center;
+}
+
+.compact {
+  max-width: 460px;
+}
+
+.primary-swap-card {
+  width: min(440px, 100%);
+}
+
+.swap-page {
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.app-header {
+  width: min(1180px, 100%);
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.title-row h1 {
+  margin: 0;
+}
+
+.title-row .hero-text {
+  max-width: 720px;
+  margin-top: 0.5rem;
+}
+
+.wallet-bar {
+  width: min(1180px, 100%);
+  margin: 0 auto 1.5rem;
+  padding: 1rem;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.connected-wallet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.connected-wallet span {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.connected-wallet strong {
+  font-size: 0.95rem;
+}
+
+.account-select {
+  min-width: 320px;
+  border: none;
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  font-weight: 700;
+  background: #f2f2f7;
+  color: #111;
+}
+
+.swap-workspace {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(360px, 0.9fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.full-swap-card {
+  width: 100%;
+  min-height: 560px;
+}
+
+.wallet-panel {
+  border-radius: 28px;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.wallet-address-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wallet-address-box span {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.wallet-address-box strong {
+  word-break: break-all;
+  font-size: 0.9rem;
+}
+
+.balance-list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.balance-row.token-balance-row {
+  gap: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.balance-token {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.balance-token span {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.balance-token strong {
+  max-width: 100%;
+  font-size: 1rem;
+  font-weight: 800;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.balance-usd-value {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  text-align: right;
+  font-weight: 700;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.wallet-total-box {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.wallet-total-box span {
+  opacity: 0.75;
+  flex: 0 0 auto;
+}
+
+.wallet-total-box strong {
+  min-width: 0;
+  white-space: nowrap;
+  font-size: 1.3rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty-wallet {
+  margin-top: 1rem;
+  opacity: 0.75;
+  line-height: 1.6;
+}
+
+.error-message {
+  color: #ff4d6d;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}
+
+.fatal-error-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(5, 7, 12, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.fatal-error-modal {
+  width: min(440px, 100%);
+  padding: 1.5rem;
+  border-radius: 24px;
+  background: #1b1e27;
+  border: 1px solid rgba(255, 77, 109, 0.45);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  text-align: center;
+}
+
+.fatal-error-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 77, 109, 0.16);
+  border: 1px solid rgba(255, 77, 109, 0.45);
+  color: #ff4d6d;
+  font-weight: 900;
+  font-size: 1.4rem;
+}
+
+.fatal-error-modal h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+}
+
+.fatal-error-modal p {
+  margin: 0 0 1.25rem;
+  color: #c9ced8;
+  line-height: 1.5;
+}
+
+.fatal-error-modal button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.2rem;
+  background: linear-gradient(135deg, #ff007a, #7a5cff);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.status-message {
+  color: #7ee787;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}
+
+.tx-status {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #72e987;
+}
+
+.tx-hash-row {
+  margin-top: 0.4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tx-hash-row code {
+  font-size: 0.9rem;
+  word-break: normal;
+}
+
+.tx-hash-row button {
+  border: 1px solid #3f4654;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  background: #20242d;
+  color: #f3f4f6;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .app-header,
+  .wallet-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .title-row {
+    align-items: flex-start;
+  }
+
+  .swap-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .account-select {
+    min-width: 100%;
+  }
 }
 
 @media (max-width: 860px) {
