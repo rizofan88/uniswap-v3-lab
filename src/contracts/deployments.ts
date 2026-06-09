@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
-import { ADDRESSES } from "../ethereum";
 import { Wallet, JsonRpcSigner } from "ethers"
+import { ADDRESSES } from "../ethereum";
 
 export async function deploySwapRouterSingle(
     signer: Wallet | JsonRpcSigner
@@ -10,9 +10,9 @@ export async function deploySwapRouterSingle(
         const SwapRouterSingle = await ethers.getContractFactory("SwapRouterSingle", signer);
         const swapRouterSingle = await SwapRouterSingle.deploy(ADDRESSES.MAINNET.SWAP_ROUTER);
         await swapRouterSingle.waitForDeployment();
-    
+
         const address = await swapRouterSingle.getAddress();
-        if(!address) {
+        if (!address) {
             throw new Error("Could not fetch SwapRouterSingle address");
         }
         return address;

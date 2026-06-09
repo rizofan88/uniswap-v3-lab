@@ -1,13 +1,13 @@
 import { env } from "../config";
 import { ethers } from "hardhat";
-import { QuoteParams } from  "./quoteTypes";
+import { QuoteParams } from "./quoteTypes";
 import { QuoteResult } from "../../shared/types";
 import { trimDecimals } from "../utils";
 import { DEFAULT_SIGNER_ADDRESS, ADDRESSES } from "../ethereum";
 
 
 const API = "https://trade-api.gateway.uniswap.org/v1/quote";
-    
+
 
 export async function getQuote({
     tokenIn,
@@ -18,10 +18,10 @@ export async function getQuote({
     protocols = ["V3"],
 }: QuoteParams): Promise<QuoteResult> {
 
-    if(!env.UNISWAP_API_KEY) {
+    if (!env.UNISWAP_API_KEY) {
         throw new Error("Could not fetch Uniswap Api key.");
     }
-    
+
     const response = await fetch(API, {
         method: "POST",
         headers: {
@@ -56,14 +56,14 @@ export async function getQuote({
 
     let gasFeeUSD;
 
-    if(!data.quote.gasFeeUSD) {
-        console.log("Are we here?")
+    if (!data.quote.gasFeeUSD) {
+
         const ethPrice = await getEthPrice();
         const wei = Number(ethers.formatEther(data.quote.gasFee));
         gasFeeUSD = wei * ethPrice;
-    }else {
+    } else {
         gasFeeUSD = data.quote.gasFeeUSD;
-        console.log("or are we here?");
+
     }
 
     return {
@@ -82,11 +82,11 @@ export async function getQuote({
 }
 
 export async function getEthPrice() {
-    
-    if(!env.UNISWAP_API_KEY) {
+
+    if (!env.UNISWAP_API_KEY) {
         throw new Error("Could not fetch Uniswap Api key.");
     }
-    
+
     const ethPriceResponse = await fetch(API, {
         method: "POST",
         headers: {
@@ -109,24 +109,12 @@ export async function getEthPrice() {
             protocols: ["V3"],
         }),
     });
-    
+
     if (!ethPriceResponse.ok) {
         throw new Error(`Quote for eth price failed: ${ethPriceResponse.status} ${await ethPriceResponse.text()}`);
     }
 
     const usdToEth = await ethPriceResponse.json();
 
-    return Number(ethers.formatUnits(usdToEth.quote.output.amount,6));
+    return Number(ethers.formatUnits(usdToEth.quote.output.amount, 6));
 }
-
-/* (async () => {
-        
-
-    const quote = await getQuote({
-        tokenIn: resolveToken(ADDRESSES.MAINNET.ETH),
-        tokenOut: resolveToken(ADDRESSES.MAINNET.UNI),
-        amount: "0.1",
-    })
-    console.log(quote)
-})()
- */

@@ -1,6 +1,5 @@
 import { ethers } from "hardhat";
 import { TOKEN_LIST } from "./tokens"
-import { Token } from "@uniswap/sdk-core";
 
 
 export function resolveToken(identifier: string) {
@@ -12,7 +11,7 @@ export function resolveToken(identifier: string) {
         if (ethers.isAddress(identifier)) {
             return token.address.toLowerCase() === normalizedIdentifier;
         }
-        
+
         return token.symbol?.toLowerCase() === normalizedIdentifier;
     });
 

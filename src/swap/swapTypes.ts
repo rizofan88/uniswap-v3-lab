@@ -4,4 +4,3 @@ export type SwapBalances = {
     outBefore: bigint;
     outAfter: bigint;
 }
-

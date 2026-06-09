@@ -1,5 +1,5 @@
 import { abi as SWAP_ROUTER_ABI } from "@uniswap/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json";
-import { abi as SWAP_PARAMS_ABI} from "../../out/SwapParams.sol/SwapParams.json"
+import { abi as SWAP_PARAMS_ABI } from "../../out/SwapParams.sol/SwapParams.json"
 
 const ERC20_ABI = [
   "function balanceOf(address owner) view returns (uint256)",

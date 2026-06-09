@@ -1,7 +1,6 @@
 import { ethers } from "hardhat";
 import { ADDRESSES, getSigner } from "../ethereum";
-import { getERC20, getWETH } from "../tokens";
-import { trimDecimals } from "../utils";
+import { getERC20Contract, getWETHContract } from "../tokens";
 
 
 export async function swapWethToDai() {
@@ -10,8 +9,8 @@ export async function swapWethToDai() {
 
   const signerAddress = await signer.getAddress();
 
-  const weth = getWETH(ADDRESSES.MAINNET.WETH, signer);
-  const dai = getERC20(ADDRESSES.MAINNET.DAI, signer);
+  const weth = getWETHContract(ADDRESSES.MAINNET.WETH, signer);
+  const dai = getERC20Contract(ADDRESSES.MAINNET.DAI, signer);
 
   const amountToWrap = ethers.parseEther("0.1");
   const amountToSwap = ethers.parseEther("0.1");
@@ -55,9 +54,9 @@ export async function swapWethToDai() {
 
   console.log("DAI:", ethers.formatEther(daiAfter));
   console.log("WETH:", ethers.formatEther(wethAfter));
-  
+
   console.log("\n--- Swap result ---");
   console.log("DAI received:", ethers.formatEther(daiAfter - daiBefore));
   console.log("WETH spent:", ethers.formatEther(wethBefore - wethAfter), "\n");
-  
+
 }

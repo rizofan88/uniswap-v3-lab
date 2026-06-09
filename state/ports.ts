@@ -1,4 +1,5 @@
 import fs from "fs";
+import pathMod from "path";
 
 type PortEntry = {
     port: number; 
@@ -7,86 +8,86 @@ type PortEntry = {
 
 type Ports = PortEntry[];
 
-const PATH = "state/ports.json";
+const PATH = pathMod.join("state/ports", "ports.json");
+
+function isPortEntry(value: unknown): value is PortEntry {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const entry = value as Partial<PortEntry>;
+
+  return (
+    typeof entry.port === "number" &&
+    Number.isInteger(entry.port) &&
+    entry.port > 0 &&
+    (entry.status === "used" || entry.status === "free")
+  );
+}
 
 function readPorts(): Ports {
+  if (!fs.existsSync(PATH)) {
+    return [];
+  }
 
-    if(!fs.existsSync(PATH)) {
-        throw new Error("Ports File doesnt exit");
-    }
+  const raw = fs.readFileSync(PATH, { encoding: "utf8" }).trim();
 
-    const raw = fs.readFileSync(
-        PATH,
-        {encoding: "utf8"}
-    );
+  if (raw.length === 0) {
+    return [];
+  }
 
-    if(!raw) {
-        throw new Error("Ports file is empty");
-    }
+  const parsed: unknown = JSON.parse(raw);
 
-    const ports = JSON.parse(raw);
+  if (!Array.isArray(parsed) || !parsed.every(isPortEntry)) {
+    throw new Error("Invalid ports file format");
+  }
 
-    return ports
+  return parsed;
+}
+
+
+function writePorts(ports: Ports): void {
+  try {
+    fs.writeFileSync(PATH, JSON.stringify(ports, null, 2));
+  } catch (error) {
+    throw new Error("Could not write ports to file");
+  }
 }
 
 export function getAvailablePort(): number {
+  const ports = readPorts();
 
-    if(!fs.existsSync(PATH)) {
-        fs.writeFileSync(
-            PATH,
-            JSON.stringify(
-                [
-                    {port: 8545, status: "used"},
-                ]
-            )
-        );
-        return 8545;
-    }
+  const freeEntry = ports.find((entry) => entry.status === "free");
 
-    const ports: Ports = readPorts();
+  if (freeEntry) {
+    freeEntry.status = "used";
+    writePorts(ports);
+    return freeEntry.port;
+  }
 
-    let freePort = 0;
+  const lastPort = ports.at(-1);
+  const nextPort = lastPort ? lastPort.port + 1 : 8545;
 
-    for(const entry of ports) {
-        if(entry.status === "free") {
-            freePort = entry.port
-            entry.status = "used"
-            break;
-        }
-    }
+  ports.push({
+    port: nextPort,
+    status: "used",
+  });
 
-    const lastPort = ports.at(-1);
-    if (!lastPort) {
-        throw new Error("Ports file has no entries");
-    }
+  writePorts(ports);
 
-    if(freePort == 0){
-        freePort = lastPort.port + 1;
-
-        ports.push({
-            port: freePort,
-            status: "used"
-        })
-    }
-    
-    fs.writeFileSync(PATH, JSON.stringify(ports));
-
-    return freePort;
+  return nextPort;
 }
 
-export async function markPortFree(port: number): Promise<boolean> {
+export function markPortFree(port: number): void {
+  const ports = readPorts();
 
-    const ports = readPorts();
+  const entry = ports.find((entry) => entry.port === port);
 
-    const entry = ports.find((entry) => entry.port === port);
+  if (!entry) {
+    throw new Error(`Cannot mark unknown port ${port} as free`);
+  }
 
-    if(!entry) {
-        return false;
-    }
+  entry.status = "free";
 
-    entry.status = "free";
-
-    fs.writeFileSync(PATH, JSON.stringify(ports));
-
-    return true;
+  writePorts(ports);
 }

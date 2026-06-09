@@ -1,7 +1,0 @@
-{ 
- "sessionId": "coffee",
- "tokenIn": "ETH",
- "tokenOut": "WETH",
- "amount": "0.1",
- "account": "0xe0E3Fa968E5888Ce9458878C392fE1711c8FF54d"
-}

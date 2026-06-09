@@ -1,15 +1,14 @@
-import { formatEther, JsonRpcSigner, Wallet } from "ethers";
-import { getWETH } from "./contracts";
+import { JsonRpcSigner, Wallet } from "ethers";
+import { getWETHContract } from "./contracts";
 import { ADDRESSES } from "../ethereum";
 import { parseTokenAmount, formatTokenAmount } from "../utils";
-import { getLocalWalletByAddress } from "../ethereum";
 
 
 export async function wrapEth(signer: Wallet | JsonRpcSigner, amount: string) {
 
     const amountRequested = parseTokenAmount(amount, 18);
     
-    const weth = await getWETH(ADDRESSES.MAINNET.WETH, signer);
+    const weth = await getWETHContract(ADDRESSES.MAINNET.WETH, signer);
     const before = await weth.balanceOf(signer.address);
 
     const txn = await weth.deposit({value: amountRequested});
@@ -48,7 +47,7 @@ export async function unwrapEth(signer: Wallet | JsonRpcSigner, amount: string) 
     const before = await signer.provider?.getBalance(signer.address);
    
     
-    const weth = await getWETH(ADDRESSES.MAINNET.WETH, signer);
+    const weth = await getWETHContract(ADDRESSES.MAINNET.WETH, signer);
 
     const txn = await weth.withdraw(amountRequested);
     const receipt = await txn.wait();

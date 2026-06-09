@@ -22,7 +22,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: env.MAINNET_RPC_URL ?? "",
+        url: env.MAINNET_RPC_URL_CHAINNODES ?? "",
       },
     },
   },

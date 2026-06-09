@@ -11,20 +11,18 @@ export type WalletSummary = {
   tokenValuesUsd: Record<TokenSymbol, string>;
 };
 
-
 export type WalletValue = {
   totalUsd: string;
   tokenValuesUsd: Record<TokenSymbol, string>;
 };
 
 export type SwapResponse = {
-    from: string,
-    to: string,
-    amountRaw: string,
-    amountFormatted: string,
-    txnHash: string
+  from: string,
+  to: string,
+  amountRaw: string,
+  amountFormatted: string,
+  txnHash: string
 }
-
 
 export type QuoteResult = {
   tokenIn: string;
@@ -32,5 +30,20 @@ export type QuoteResult = {
   amountIn: string;
   quotedAmountOut: string;
   gasFeeUsd: string;
-  
+
+};
+
+export type SessionStatus = {
+  phase:
+  | "starting"
+  | "forking-mainnet"
+  | "waiting-for-rpc"
+  | "funding-accounts"
+  | "deploying-router"
+  | "loading-tokens"
+  | "ready"
+  | "idle"
+  | "error";
+  message: string;
+  error?: string;
 };

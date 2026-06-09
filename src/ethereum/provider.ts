@@ -14,22 +14,21 @@ export async function assertRpcIsAlive(port: string): Promise<any> {
     `http://localhost:${port}`,
     {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         jsonrpc: "2.0",
         method: "eth_chainId",
         params: [],
-        id : 1
+        id: 1
       })
     }
   );
 
-  if(!res.ok) {
+  if (!res.ok) {
     throw new Error(`Unable to connect to RPC endpoint with port ${port}`);
   }
 
   const data = await res.json();
-  //console.log("\n[PROVIDER] Test was successful: ", data, "\n");
 
   if (data.error) {
     throw new Error(`RPC endpoint using port ${port} returned error: ${data.error.message}`);
@@ -45,8 +44,8 @@ export async function waitForRpc(
   port: string,
   attempts = 30,
   delayMs = 500
-):Promise <void> {
-  for(let i = 0; i < attempts; i++) {
+): Promise<void> {
+  for (let i = 0; i < attempts; i++) {
     try {
       await assertRpcIsAlive(port);
       return;
@@ -56,8 +55,3 @@ export async function waitForRpc(
   }
   throw new Error(`RPC on port ${port} did not become ready`);
 }
-
-/* (async () => {
-  const isAlive = await assertRpcIsAlive("8545");
-  console.log(isAlive)
-})(); */

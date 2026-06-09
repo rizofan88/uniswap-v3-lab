@@ -1,4 +1,5 @@
-import { QuoteResult, QuoteRow } from "./quoteTypes";
+import { QuoteRow } from "./quoteTypes";
+import { QuoteResult } from "../../shared/types";
 import { Token } from "@uniswap/sdk-core";
 
 export function printQuote(quote: QuoteResult, tokenIn: Token, tokenOut: Token) {

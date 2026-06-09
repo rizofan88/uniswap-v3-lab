@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import type {SwapResponse, QuoteResult, TokenSymbol, WalletSummary, WalletBalance, WalletValue } from "../../shared/types";
+import type {
+  SwapResponse,
+  QuoteResult,
+  TokenSymbol,
+  WalletSummary,
+  WalletBalance,
+  WalletValue,
+  SessionStatus
+} from "../../shared/types";
 
 
 type TokenSelection = TokenSymbol | "";
@@ -10,49 +18,79 @@ type LocalAccount = {
   label: string;
 };
 
-async function initState(sessionId: string) {
+async function initSession(sessionId: string) {
 
-  console.log("[VITE] Calling state API.");
-  const res = await fetch(`/api/init-state?sessionId=${sessionId}`);
+  console.log("Calling init session API.");
 
-  if(!res.ok) {
-    throw new Error("Failed to call initialize state api");
+  const res = await fetch("/api/init-session", {
+    method: "POST",
+    headers: { "Content-type": "application/json" },
+    body: JSON.stringify({ sessionId })
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(data?.error ?? "Failed to call initialize session api");
   }
-  const port = await res.json();
-  console.log("[VITE] Port received: ", port);
-  
-  return port;
+
+  if (typeof data?.port !== "number") {
+    throw new Error("Invalid init-session response from server.");
+  }
+
+  console.log("Port received:", data.port);
+
+  return data.port;
 }
 
-function cleanState() {
-  sessionStorage.removeItem("sessionId");
-}
+async function fetchSessionStatus(sessionId: string): Promise<SessionStatus> {
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  const res = await fetch(`/api/session-status?sessionId=${sessionId}`);
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(data?.error ?? "Failed to fetch session status.");
+  }
+
+  if (!data?.phase || !data?.message) {
+    throw new Error("Invalid session status response.");
+  }
+
+  return data;
 }
 
 async function pingSession(sessionId: string) {
 
-  const res = await fetch(`/api/ping-session?sessionId=${sessionId}`);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await fetch("/api/ping-session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sessionId }),
+    });
 
-  if (res.ok) return;
 
-  console.log("[VITE] Not updated, trying to ping again.");
+    if (res.ok) {
+      return;
+    }
 
-  sleep(1_000);
-
-  const retryRes = await fetch(`/api/ping-session?sessionId=${sessionId}`);
-  
-  if(!retryRes.ok) {
-    throw new Error("Lost connection to the local fork session. Reload the page to start a new session.");
+    if (attempt === 0) {
+      console.log("Not updated, trying to ping again.");
+      await sleep(1_000);
+    }
   }
+
+  throw new Error(
+    "Lost connection to the local fork session. Reload the page to start a new session."
+  );
 
 }
 
-async function getForkAccounts(sessionId: string): Promise<LocalAccount[]> {
+async function getForkAccounts(): Promise<LocalAccount[]> {
 
-  const res = await fetch(`/api/accounts?sessionId=${sessionId}`);
+  const res = await fetch("/api/accounts");
 
   if (!res.ok) {
     throw new Error("Failed to connect account. Try again please.");
@@ -68,11 +106,11 @@ async function getForkAccounts(sessionId: string): Promise<LocalAccount[]> {
   return ANVIL_ACCOUNTS;
 }
 
-async function fetchTokens(): Promise<TokenSymbol[]>{
+async function fetchTokens(): Promise<TokenSymbol[]> {
 
-  const res = await fetch("/api/token_list");
+  const res = await fetch("/api/token-list");
 
-  if(!res.ok) {
+  if (!res.ok) {
     throw new Error("Failed to fetch token list");
   }
 
@@ -86,13 +124,13 @@ async function fetchQuote(params: {
   tokenOut: TokenSymbol;
   amount: string;
 }): Promise<QuoteResult> {
-  console.log("getting quote:", params);
+  console.log("Requesting quote:", params);
 
   const query = new URLSearchParams(params);
   const res = await fetch(`/api/quote?${query}`);
 
-  if(!res.ok) {
-    throw new Error(`Failed to fetch quote: ${res.status}`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch quote.");
   }
 
   const data: QuoteResult = await res.json();
@@ -108,13 +146,13 @@ async function fetchQuote(params: {
 
 async function getWalletSummary(params: {
   sessionId: string
-  address: string, 
+  address: string,
 }): Promise<WalletSummary> {
-  
+
   const query = new URLSearchParams(params);
   const res = await fetch(`/api/wallet-summary?${query}`);
 
-  if(!res.ok) {
+  if (!res.ok) {
     throw new Error("Failed to fetch wallet summary");
   }
 
@@ -134,17 +172,21 @@ async function executeSwap(params: {
 
   const res = await fetch("/api/swap", {
     method: "POST",
-    headers: { "Content-type": "application/json"},
+    headers: { "Content-type": "application/json" },
     body: JSON.stringify(params)
   });
 
-  const data = await res.json();
- 
-  if(!res.ok) {
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
     throw new Error(data.error ?? "Swap Failed. Try again.");
   }
 
   return data;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function formatTokenDisplay(value: string | number, maxDecimals = 4) {
@@ -169,7 +211,6 @@ function formatUsd(value: string | number) {
   }).format(num);
 }
 
-
 function shortenAddress(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
@@ -184,6 +225,10 @@ function makeSessionId() {
 
 function App() {
   const [sessionId, setSessionId] = useState<string>();
+  const [sessionStatus, setSessionStatus] = useState<SessionStatus>({
+    phase: "idle",
+    message: "Preparing session...",
+  });
 
   const [accounts, setAccounts] = useState<LocalAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<LocalAccount | null>(
@@ -194,12 +239,12 @@ function App() {
   const [balances, setBalances] = useState<WalletBalance[]>([]);
 
   const [tokens, setTokens] = useState<TokenSymbol[]>([]);
-  const [tokenIn, setTokenIn] = useState<TokenSelection>("WETH");
+  const [tokenIn, setTokenIn] = useState<TokenSelection>("ETH");
   const [tokenOut, setTokenOut] = useState<TokenSelection>("DAI");
   const [amount, setAmount] = useState("0.1");
 
   const [quote, setQuote] = useState<QuoteResult | null>(null);
-  
+
   const [statusMessage, setStatusMessage] = useState("");
   const [swapResult, setSwapResult] = useState<SwapResponse | null>(null);
 
@@ -217,32 +262,26 @@ function App() {
   useEffect(() => {
     async function initFork() {
       try {
-        
-        /* sessionStorage.removeItem("sessionId");
-        return; */
         setFatalError("");
 
-        console.log("[VITE] Getting session id.");
+        console.log("Getting session id.");
         let sessionId = sessionStorage.getItem("sessionId");
 
-        if(sessionId) {
+        if (sessionId) {
           setSessionId(sessionId);
           return;
         }
 
-        console.log("[VITE] getting crypto stuff.");
-        sessionId = makeSessionId(); 
+        sessionId = makeSessionId();
         sessionStorage.setItem("sessionId", sessionId);
-        
-        setSessionId(sessionId);
-        
-        console.log("[VITE] Calling initState() function.");
-        const port = await initState(sessionId);
 
-        console.log("State Port setted to: ", port);
+        setSessionId(sessionId);
+
+        console.log("Requesting init session.");
+        const port = await initSession(sessionId);
+        console.log("Session Port setted to: ", port);
 
       } catch (err) {
-      console.log("[VITE] error: ", err);
         setFatalError(
           err instanceof Error
             ? err.message
@@ -253,6 +292,46 @@ function App() {
 
     initFork();
   }, []);
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    let cancelled = false;
+    let timeout: number;
+
+    async function poll() {
+      try {
+        const status = await fetchSessionStatus(sessionId);
+
+        if (cancelled) return;
+
+        setSessionStatus(status);
+
+        if (status.phase === "ready" || status.phase === "error") {
+          return;
+        }
+
+        timeout = window.setTimeout(poll, 5_000);
+      } catch (err) {
+        if (cancelled) return;
+
+        setSessionStatus({
+          phase: "error",
+          message:
+            err instanceof Error
+              ? err.message
+              : "Failed to fetch fork status.",
+        });
+      }
+    }
+
+    poll();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [sessionId]);
 
   useEffect(() => {
     async function loadTokens() {
@@ -270,24 +349,18 @@ function App() {
 
   useEffect(() => {
     if (!sessionId) return;
+    if (sessionStatus.phase !== "ready") return;
 
-    console.log("[VITE] Setting up ping interval");
-    const interval = setInterval(async() => {
+    console.log("Setting up ping session with sessionId:", sessionId);
 
-      try {
-        await pingSession(sessionId);
-      } catch(err) {
-        clearInterval(interval)
-        setFatalError(
-          err instanceof Error
-            ? err.message
-            : "Lost connection to the fork session. Please reload the page."
-        );
-      }
+    const interval = setInterval(() => {
+      pingSession(sessionId).catch((err) => {
+        console.error("Failed to ping session:", err);
+      });
     }, 10_000);
 
-  return () => clearInterval(interval);  
-  }, [sessionId]);
+    return () => clearInterval(interval);
+  }, [sessionId, sessionStatus.phase]);
 
 
   async function handleConnectWallet() {
@@ -295,12 +368,15 @@ function App() {
       setWalletError("");
       setIsConnecting(true);
       setIsConnecting(true);
-  
-      if(!sessionId) {
-        throw new Error("Missing sessionId. Could not fetch accounts.");
+
+      if (!sessionId) {
+        throw new Error("Missing sessionId. Could not fetch accounts");
+      }
+      if (sessionStatus.phase !== "ready") {
+        throw new Error("The local fork is still initializing. Please wait.");
       }
 
-      const forkAccounts = await getForkAccounts(sessionId);
+      const forkAccounts = await getForkAccounts();
 
       setAccounts(forkAccounts);
 
@@ -324,7 +400,7 @@ function App() {
         totalUsd: accountSummary.totalUsd
       });
 
-      setStatusMessage("Connected to local Anvil account.");
+      setStatusMessage("Connected to local Anvil account");
     } catch (err) {
       setWalletError(err instanceof Error ? err.message : "Failed to connect wallet");
     } finally {
@@ -345,7 +421,6 @@ function App() {
       if (!sessionId) {
         throw new Error("Missing sessionId. Could not select account.");
       }
-
 
       setSelectedAccount(account);
 
@@ -447,16 +522,16 @@ function App() {
           sessionId: sessionId,
           address: selectedAccount.address
         });
-  
+
         setBalances(updatedSummary.balances);
-  
+
         setWalletValue({
           tokenValuesUsd: updatedSummary.tokenValuesUsd,
           totalUsd: updatedSummary.totalUsd
         });
-        
+
       } catch (err) {
-        console.log("[VITE] error: ", err);
+        console.log("error: ", err);
         setWalletError(
           err instanceof Error
             ? `Swap submitted but wallet error occured: ${err.message}`
@@ -501,35 +576,29 @@ function App() {
 
   return (
     <main className="page swap-page">
-    {fatalError && (
-      <div className="fatal-error-backdrop">
-        <div className="fatal-error-modal">
-          <div className="fatal-error-icon">!</div>
+      {fatalError && (
+        <div className="fatal-error-backdrop">
+          <div className="fatal-error-modal">
+            <div className="fatal-error-icon">!</div>
 
-          <h2>App connection lost</h2>
+            <h2>App connection lost</h2>
 
-          <p>{fatalError}</p>
+            <p>{fatalError}</p>
 
-          <button type="button" onClick={() => {
-            cleanState();
-            window.location.reload()
+            <button type="button" onClick={() => {
+              sessionStorage.removeItem("sessionId");
+              window.location.reload()
             }}>
-            Reload page
-          </button>
+              Reload page
+            </button>
+          </div>
         </div>
-      </div>
-    )}
+      )}
       <header className="app-header">
         <div>
           <p className="eyebrow">Ethereum Mainnet Fork Demo</p>
 
           <div className="title-row">
-{/*             <img
-              src={uniswapLogo}
-              className="uniswap-logo"
-              alt="Uniswap logo"
-            /> */}
-
             <div>
               <h1>Uniswap V3 Lab</h1>
               <p className="hero-text">
@@ -551,13 +620,24 @@ function App() {
       </header>
 
       <section className="wallet-bar">
+        {sessionStatus.phase !== "ready" && !fatalError && (
+          <div className="session-status-card">
+            <strong>Starting local mainnet fork</strong>
+            <p>{sessionStatus.message}</p>
+          </div>
+        )}
+
         {!selectedAccount ? (
           <button
             className="button primary"
             onClick={handleConnectWallet}
-            disabled={isConnecting}
+            disabled={isConnecting || sessionStatus.phase !== "ready"}
           >
-            {isConnecting ? "Connecting..." : "Connect local wallet"}
+            {sessionStatus.phase !== "ready"
+              ? "Preparing fork..."
+              : isConnecting
+                ? "Connecting..."
+                : "Connect local wallet"}
           </button>
         ) : (
           <>
@@ -572,6 +652,7 @@ function App() {
               className="account-select"
               value={selectedAccount.address}
               onChange={(event) => handleSelectAccount(event.target.value)}
+              disabled={sessionStatus.phase !== "ready"}
             >
               {accounts.map((account) => (
                 <option key={account.address} value={account.address}>
@@ -643,36 +724,36 @@ function App() {
                 readOnly
                 placeholder="Quote required"
               />
-            <select
-              className="token-select"
-              value={tokenOut}
-              onChange={(event) => {
-                const nextToken = event.target.value as TokenSelection;
+              <select
+                className="token-select"
+                value={tokenOut}
+                onChange={(event) => {
+                  const nextToken = event.target.value as TokenSelection;
 
-                setTokenOut(nextToken);
-                setQuote(null);
+                  setTokenOut(nextToken);
+                  setQuote(null);
 
-                if (nextToken && nextToken === tokenIn) {
-                  setTokenIn("");
-                }
-              }}
-            >
-              <option value="">Select</option>
-              {tokens.map((token) => (
-                <option key={token} value={token}>
-                  {token}
-                </option>
-              ))}
-            </select>
+                  if (nextToken && nextToken === tokenIn) {
+                    setTokenIn("");
+                  }
+                }}
+              >
+                <option value="">Select</option>
+                {tokens.map((token) => (
+                  <option key={token} value={token}>
+                    {token}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
           <div className="details">
             <div>
               <span>Route</span>
-            <strong>
-              {tokenIn || "—"} → {tokenOut || "—"}
-            </strong>
+              <strong>
+                {tokenIn || "—"} → {tokenOut || "—"}
+              </strong>
             </div>
 
             <div>
@@ -713,13 +794,13 @@ function App() {
 
           <div className="swap-actions">
 
-          <button
-            className="quote-button"
-            onClick={handleFetchQuote}
-            disabled={isQuoteLoading || !selectedAccount || !tokenIn || !tokenOut}
-          >
-            {isQuoteLoading ? "Getting quote..." : "Get quote"}
-          </button>
+            <button
+              className="quote-button"
+              onClick={handleFetchQuote}
+              disabled={isQuoteLoading || !selectedAccount || !tokenIn || !tokenOut}
+            >
+              {isQuoteLoading ? "Getting quote..." : "Get quote"}
+            </button>
 
             <button
               className="swap-button"
@@ -745,29 +826,29 @@ function App() {
                 <strong>{selectedAccount.address}</strong>
               </div>
 
-            <div className="balance-list">
-              {balances.map((balance) => {
-                const usdValue = walletValue?.tokenValuesUsd[balance.symbol];
+              <div className="balance-list">
+                {balances.map((balance) => {
+                  const usdValue = walletValue?.tokenValuesUsd[balance.symbol];
 
-                return (
-                  <div className="balance-row token-balance-row" key={balance.symbol}>
-                    <div className="balance-token">
-                      <span>{balance.symbol}</span>
-                      <strong>{formatTokenDisplay(balance.balance)}</strong>
+                  return (
+                    <div className="balance-row token-balance-row" key={balance.symbol}>
+                      <div className="balance-token">
+                        <span>{balance.symbol}</span>
+                        <strong>{formatTokenDisplay(balance.balance)}</strong>
+                      </div>
+
+                      <div className="balance-usd-value">
+                        {usdValue !== undefined ? formatUsd(usdValue) : "—"}
+                      </div>
                     </div>
+                  );
+                })}
+              </div>
 
-                    <div className="balance-usd-value">
-                      {usdValue !== undefined ? formatUsd(usdValue) : "—"}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="wallet-total-box">
-              <span>Total:</span>
-              <strong>{walletValue ? formatUsd(walletValue.totalUsd) : "—"}</strong>
-            </div>
+              <div className="wallet-total-box">
+                <span>Total:</span>
+                <strong>{walletValue ? formatUsd(walletValue.totalUsd) : "—"}</strong>
+              </div>
             </>
           ) : (
             <p className="empty-wallet">

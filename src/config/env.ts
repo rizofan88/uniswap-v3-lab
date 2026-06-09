@@ -13,6 +13,7 @@ function requireEnv(name: string) {
 
 
 export const env = {
-  MAINNET_RPC_URL : requireEnv("MAINNET_RPC_URL"),
-  UNISWAP_API_KEY : process.env.UNISWAP_API_KEY,
+  MAINNET_RPC_URL_CHAINNODES : requireEnv("MAINNET_RPC_URL_CHAINNODES"),
+  MAINNET_RPC_URL_ALCHEMY: requireEnv("MAINNET_RPC_URL_ALCHEMY"),
+  UNISWAP_API_KEY : requireEnv("UNISWAP_API_KEY"),
 }

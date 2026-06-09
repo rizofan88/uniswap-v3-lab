@@ -1,3 +1,3 @@
 export { getQuote } from "./getQuote";
 export { printQuote} from "./printQuote";
-export { QuoteParams, QuoteResult } from "./quoteTypes";
+export { QuoteParams } from "./quoteTypes";

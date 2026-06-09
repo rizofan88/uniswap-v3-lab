@@ -1,12 +1,11 @@
 import { ethers } from "hardhat";
 import type { ContractRunner } from "ethers";
 import { ABI } from "../contracts";
-import { getLocalSignerByAddress } from "../ethereum";
 
-export function getERC20(address: string, signerOrProvider: ContractRunner) {
+export function getERC20Contract(address: string, signerOrProvider: ContractRunner) {
   return new ethers.Contract(address, ABI.ERC20, signerOrProvider);
 }
 
-export function getWETH(address: string, signerOrProvider: ContractRunner) {
+export function getWETHContract(address: string, signerOrProvider: ContractRunner) {
   return new ethers.Contract(address, ABI.WETH, signerOrProvider);
 }
